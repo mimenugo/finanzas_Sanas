@@ -1,0 +1,22 @@
+node_modules
+# Keep environment variables out of version control
+.env
+.env.*
+!.env.example
+
+/generated/prisma
+
+# Runtime files
+uploads/
+logs/
+*.log
+*.err.log
+tmp/
+exports/
+
+# Local databases/backups
+*.sql
+!prisma/migrations/**/*.sql
+*.dump
+*.bak
+*.backup

@@ -1,0 +1,78 @@
+# Dependencies
+node_modules/
+source/client/node_modules/
+source/server/node_modules/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+source/client/.env
+source/server/.env
+client_secret*.json
+*service*account*.json
+portal-cliente-*.json
+secreto.txt
+Id_.txt
+
+# Build outputs
+dist/
+build/
+.cataleya-build/
+source/client/dist/
+source/server/dist/
+
+# Logs and runtime output
+*.log
+logs/
+tmp/
+*.tmp
+*.bak
+*.backup
+*.dump
+*.sql
+!source/server/prisma/migrations/**/*.sql
+client-dev.log
+server-dev.log
+mysql-start.log
+mysql-start.err.log
+stripe-listen.log
+stripe-listen.err.log
+source/client/*.log
+source/server/*.log
+
+# User uploads and private customer files
+source/server/uploads/
+source/server/tmp/
+source/server/exports/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.agents/
+.codex/
+.sixth/
+.history/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Prisma generated clients
+source/server/generated/prisma/
+
+# Local tool/cache folders
+.cache/
+.npm/
+.pnpm-store/
+
+# Local artifacts from unrelated prototypes kept in this workspace
+antoj-alos-menu/
+unity_changes/
+build_gastro_proposal.py
+fix_mimenu_mojibake.js
+Datos para para un dashboard antigü.txt

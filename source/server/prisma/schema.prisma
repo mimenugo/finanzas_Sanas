@@ -1,0 +1,625 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  fullName  String
+  role      Role     @default(COBRADOR)
+  status    Status   @default(ACTIVE)
+  phone     String?
+  photo     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loans            Loan[]
+  payments         Payment[]
+  auditLogs        AuditLog[]
+  collectionLogs   CollectionLog[]
+  approvedLoans    LoanApproval[]
+  notifications    Notification[] 
+  cashMovements    CashMovement[]   
+  cashTransfers    CashTransfer[] 
+  cashClosures     CashClosure[]
+  
+  @@index([email])     
+  @@index([role])      
+  @@index([status])    
+}
+
+model Customer {
+  id               Int       @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  documentType     String
+  documentNumber   String    @unique
+  birthDate        DateTime?
+  gender           String?
+  phone            String
+  email            String?
+  address          String?
+  company          String?
+  position         String?
+  monthlyIncome    Decimal?  @db.Decimal(10, 2)
+  referenceName    String?
+  referencePhone   String?
+  referenceRelation String?
+  photo            String?
+  documentFileUrl  String?
+  documentFileName String?
+  documentFileMimeType String?
+  documentFileSize Int?
+  documentFileStorage String?
+  googleDriveFileId String?
+  addressProofType String?
+  addressProofIssuedAt DateTime?
+  addressProofFileUrl String?
+  addressProofFileName String?
+  addressProofFileMimeType String?
+  addressProofFileSize Int?
+  addressProofFileStorage String?
+  addressProofGoogleDriveFileId String?
+  creditReferenceCustomerId Int?
+  registrationStatus String? @default("APPROVED")
+  registeredAt DateTime?
+  biometricStatus String? @default("PENDING")
+  photoCapturedAt DateTime?
+  livenessPhotoUrl String?
+  livenessPhotoName String?
+  livenessPhotoMimeType String?
+  livenessPhotoSize Int?
+  livenessCapturedAt DateTime?
+  livenessScore Decimal? @db.Decimal(5, 2)
+  livenessNotes String? @db.Text
+  internalScore    Int       @default(0)
+  status           Status    @default(ACTIVE)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  loanApplications LoanApplication[]
+  loans            Loan[]
+  creditReferenceCustomer Customer? @relation("CustomerCreditReference", fields: [creditReferenceCustomerId], references: [id])
+  creditReferences Customer[] @relation("CustomerCreditReference")
+  paymentReferences PaymentReference[]
+  paymentTransactions PaymentTransaction[]
+  
+  @@index([documentNumber])           
+  @@index([email])                    
+  @@index([phone])                    
+  @@index([firstName, lastName])      
+  @@index([status])                   
+  @@index([creditReferenceCustomerId])
+  @@index([createdAt])                
+}
+
+model RegistrationLink {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  purpose   String   @default("CLIENT")
+  status    String   @default("PENDING")
+  requireGuarantor Boolean @default(false)
+  customerId Int?
+  guarantorForCustomerId Int?
+  progress  Json?
+  expiresAt DateTime
+  createdBy Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([expiresAt])
+  @@index([customerId])
+  @@map("registration_links")
+}
+
+model PaymentSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.Text
+  category  String   @default("general")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("payment_settings")
+}
+
+model PaymentMethodConfig {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  icon        String?
+  providerCode String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  feeType     String   @default("FIXED")
+  feeValue    Decimal  @default(0) @db.Decimal(10, 2)
+  feePaidBy   String   @default("COMPANY")
+  minAmount   Decimal? @db.Decimal(10, 2)
+  maxAmount   Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paymentTransactions PaymentTransaction[]
+  paymentReferences PaymentReference[]
+
+  @@index([active])
+  @@index([sortOrder])
+  @@map("payment_method_configs")
+}
+
+model BankAccount {
+  id            Int      @id @default(autoincrement())
+  bank          String
+  name          String
+  accountHolder String
+  accountNumber String?
+  clabe         String?
+  cardNumber    String?
+  branch        String?
+  currency      String   @default("MXN")
+  accountType   String
+  isPrimary     Boolean  @default(false)
+  active        Boolean  @default(true)
+  color         String?
+  logoUrl       String?
+  useSpei       Boolean  @default(false)
+  useDeposits   Boolean  @default(false)
+  useReferences Boolean  @default(false)
+  useTransfers  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  paymentTransactions PaymentTransaction[]
+  paymentReferences PaymentReference[]
+
+  @@index([active])
+  @@index([isPrimary])
+  @@map("bank_accounts")
+}
+
+model PaymentProviderConfig {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  mode        String   @default("SANDBOX")
+  active      Boolean  @default(false)
+  credentials Json?
+  webhookUrls Json?
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paymentTransactions PaymentTransaction[]
+
+  @@index([active])
+  @@map("payment_provider_configs")
+}
+
+model PaymentReference {
+  id          Int      @id @default(autoincrement())
+  loanId      Int
+  customerId  Int
+  methodId    Int
+  bankAccountId Int?
+  reference   String   @unique
+  barcode     String?
+  amount      Decimal  @db.Decimal(10, 2)
+  fee         Decimal  @default(0) @db.Decimal(10, 2)
+  status      String   @default("PENDING")
+  expiresAt   DateTime
+  confirmedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  loan Loan @relation(fields: [loanId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  method PaymentMethodConfig @relation(fields: [methodId], references: [id])
+  bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
+
+  @@index([loanId])
+  @@index([customerId])
+  @@index([status])
+  @@map("payment_references")
+}
+
+model PaymentTransaction {
+  id          Int      @id @default(autoincrement())
+  folio       String   @unique
+  loanId      Int?
+  customerId  Int?
+  paymentId   Int?
+  methodId    Int?
+  providerId  Int?
+  bankAccountId Int?
+  cashId      Int?
+  amount      Decimal  @db.Decimal(10, 2)
+  fee         Decimal  @default(0) @db.Decimal(10, 2)
+  status      String   @default("PENDING")
+  providerTransactionId String?
+  authorizationNumber String?
+  reference   String?
+  ipAddress   String?
+  device      String?
+  browser     String?
+  providerResponse Json?
+  notes       String?  @db.Text
+  createdBy   Int?
+  confirmedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  loan Loan? @relation(fields: [loanId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+  method PaymentMethodConfig? @relation(fields: [methodId], references: [id])
+  provider PaymentProviderConfig? @relation(fields: [providerId], references: [id])
+  bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
+
+  @@index([loanId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("payment_transactions")
+}
+
+model ClientPortalOtp {
+  id          Int       @id @default(autoincrement())
+  customerId  Int
+  loanId      Int
+  email       String
+  codeHash    String
+  tokenHash   String?
+  status      String    @default("PENDING")
+  attempts    Int       @default(0)
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  usedAt      DateTime?
+  ipAddress   String?
+  userAgent   String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([customerId])
+  @@index([loanId])
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("client_portal_otps")
+}
+
+model LoanApplication {
+  id              Int      @id @default(autoincrement())
+  customerId      Int
+  requestedAmount Decimal  @db.Decimal(10, 2)
+  term            Int
+  frequency       Frequency
+  purpose         String?  @db.Text
+  documents       String?  @db.Text
+  status          ApplicationStatus @default(PENDING)
+  analystId       Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer  Customer @relation(fields: [customerId], references: [id])
+  approval  LoanApproval?
+  loan      Loan?
+  
+  @@index([customerId])               
+  @@index([status])                   
+  @@index([analystId])                
+  @@index([createdAt])                
+}
+
+model LoanApproval {
+  id              Int      @id @default(autoincrement())
+  applicationId   Int      @unique
+  approvedAmount  Decimal  @db.Decimal(10, 2)
+  interestRate    Decimal  @db.Decimal(5, 2)
+  term            Int
+  frequency       Frequency
+  observations    String?  @db.Text
+  approvedBy      Int
+  rejectionReason String?  @db.Text
+  status          ApprovalStatus
+  createdAt       DateTime @default(now())
+
+  application LoanApplication @relation(fields: [applicationId], references: [id])
+  approver    User @relation(fields: [approvedBy], references: [id])
+  
+  @@index([approvedBy])               
+  @@index([status])                   
+  @@index([createdAt])                
+}
+
+model Loan {
+  id              Int      @id @default(autoincrement())
+  applicationId   Int      @unique
+  customerId      Int
+  collectorId     Int
+  amount          Decimal  @db.Decimal(10, 2)
+  interestRate    Decimal  @db.Decimal(5, 2)
+  term            Int
+  frequency       Frequency
+  disbursementDate DateTime
+  disbursementMethod String
+  balance         Decimal  @db.Decimal(10, 2)
+  status          LoanStatus @default(ACTIVE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  application     LoanApplication @relation(fields: [applicationId], references: [id])
+  customer        Customer @relation(fields: [customerId], references: [id])
+  collector       User @relation(fields: [collectorId], references: [id])
+  installments    Installment[]
+  payments        Payment[]
+  collectionLogs  CollectionLog[]
+  paymentReferences PaymentReference[]
+  paymentTransactions PaymentTransaction[]
+  
+  @@index([customerId])               
+  @@index([collectorId])              
+  @@index([status])                   
+  @@index([disbursementDate])         
+  @@index([createdAt])            
+}
+
+model Installment {
+  id              Int      @id @default(autoincrement())
+  loanId          Int
+  installmentNumber Int
+  dueDate         DateTime
+  principal       Decimal  @db.Decimal(10, 2)
+  interest        Decimal  @db.Decimal(10, 2)
+  total           Decimal  @db.Decimal(10, 2)
+  lateFee         Decimal  @default(0) @db.Decimal(10, 2)
+  paidAmount      Decimal  @default(0) @db.Decimal(10, 2)
+  status          InstallmentStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+
+  loan     Loan @relation(fields: [loanId], references: [id])
+  payments PaymentInstallment[]
+  
+  @@index([loanId])                   
+  @@index([status])                   
+  @@index([dueDate])                  
+  @@index([loanId, status])           
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  loanId          Int
+  amount          Decimal  @db.Decimal(10, 2)
+  paymentDate     DateTime
+  paymentMethod   String
+  reference       String?
+  observations    String?  @db.Text
+  collectedBy     Int
+  createdAt       DateTime @default(now())
+
+  loan         Loan @relation(fields: [loanId], references: [id])
+  collector    User @relation(fields: [collectedBy], references: [id])
+  installments PaymentInstallment[]
+  
+  @@index([loanId])                   
+  @@index([collectedBy])              
+  @@index([paymentDate])              
+  @@index([createdAt])                
+}
+
+model PaymentInstallment {
+  id              Int      @id @default(autoincrement())
+  paymentId       Int
+  installmentId   Int
+  amount          Decimal  @db.Decimal(10, 2)
+
+  payment      Payment @relation(fields: [paymentId], references: [id])
+  installment  Installment @relation(fields: [installmentId], references: [id])
+  
+  @@index([paymentId])                
+  @@index([installmentId])            
+}
+
+model CollectionLog {
+  id              Int      @id @default(autoincrement())
+  loanId          Int
+  contactType     String
+  result          String
+  promiseDate     DateTime?
+  promiseAmount   Decimal?  @db.Decimal(10, 2)
+  nextFollowUp    DateTime?
+  observations    String?  @db.Text
+  collectorId     Int
+  createdAt       DateTime @default(now())
+
+  loan      Loan @relation(fields: [loanId], references: [id])
+  collector User @relation(fields: [collectorId], references: [id])
+  
+  @@index([loanId])                   
+  @@index([collectorId])              
+  @@index([createdAt])                
+  @@index([nextFollowUp])             
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  module    String
+  action    String
+  details   String?  @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([userId])                   
+  @@index([module])                   
+  @@index([action])                   
+  @@index([createdAt])                
+}
+
+model Settings {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.Text
+  category  String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+  @@map("settings")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  message   String   @db.Text
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, read])            
+  @@index([createdAt])               
+}
+
+model Cash {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  type        String   
+  balance     Decimal  @default(0) @db.Decimal(10, 2)
+  status      Status   @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  movements   CashMovement[]
+  transfersFrom CashTransfer[] @relation("TransferFrom")
+  transfersTo   CashTransfer[] @relation("TransferTo")
+  closures    CashClosure[]
+
+  @@map("cash-boxes")
+  @@index([status])                  
+  @@index([type])                    
+}
+
+model CashMovement {
+  id          Int      @id @default(autoincrement())
+  cashId      Int
+  type        String  
+  concept     String   @db.Text
+  amount      Decimal  @db.Decimal(10, 2)
+  observations String?  @db.Text
+  reference   String? 
+  relatadId   String?
+  relatadType String?
+  userId      Int
+  createdAt   DateTime @default(now())
+
+  cash Cash @relation(fields: [cashId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([cashId, type])            
+  @@index([createdAt])               
+  @@index([userId])                  
+  @@map("cash-movements")
+}
+
+model CashTransfer {
+  id          Int      @id @default(autoincrement())
+  fromCashId  Int
+  toCashId    Int
+  amount      Decimal  @db.Decimal(10, 2)
+  reason      String?  @db.Text
+  userId      Int
+  createdAt   DateTime @default(now())
+
+  fromCash Cash @relation("TransferFrom", fields: [fromCashId], references: [id])
+  toCash   Cash @relation("TransferTo", fields: [toCashId], references: [id])
+  user     User @relation(fields: [userId], references: [id])
+
+  @@map("cash-transfers")
+  @@index([fromCashId])              
+  @@index([toCashId])                
+  @@index([userId])                  
+  @@index([createdAt])               
+}
+
+model CashClosure {
+  id                 Int      @id @default(autoincrement())
+  cashId             Int
+  closureDate        DateTime
+  initialBalance     Decimal  @db.Decimal(10, 2)
+  totalIncome        Decimal  @db.Decimal(10, 2)
+  totalExpense       Decimal  @db.Decimal(10, 2)
+  theoreticalBalance Decimal  @db.Decimal(10, 2)
+  physicalBalance    Decimal  @db.Decimal(10, 2)
+  difference         Decimal  @db.Decimal(10, 2)
+  observations       String?  @db.Text
+  denominations      Json?
+  userId             Int
+  createdAt          DateTime @default(now())
+
+  cash Cash @relation(fields: [cashId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("cash-closures")
+  @@index([cashId])                  
+  @@index([userId])                  
+  @@index([closureDate])             
+  @@index([createdAt])               
+}
+
+enum Role {
+  ADMIN
+  ANALISTA
+  COBRADOR
+  CONSULTA
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  APPROVED
+  REJECTED
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID
+  DEFAULTED
+}
+
+enum InstallmentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}

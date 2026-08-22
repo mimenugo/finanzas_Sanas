@@ -1,0 +1,153 @@
+=================================
+GUÍA DE INSTALACIÓN - CREDIMANAGER
+Version 1.0
+=================================
+
+REQUISITOS PREVIOS:
+- Node.js 18+ instalado (https://nodejs.org)
+- MySQL 8.0+ instalado
+- Terminal/CMD con acceso a npm
+
+=================================
+PASO 1: CONFIGURAR BASE DE DATOS
+=================================
+
+1.1. Abrir MySQL y ejecutar:
+
+    CREATE DATABASE creditmanager CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+1.2. Crear usuario (opcional pero recomendado):
+
+    CREATE USER 'crediuser'@'localhost' IDENTIFIED BY 'your_password_here';
+    GRANT ALL PRIVILEGES ON creditmanager.* TO 'crediuser'@'localhost';
+    FLUSH PRIVILEGES;
+
+=================================
+PASO 2: CONFIGURAR BACKEND
+=================================
+
+2.1. Abrir terminal y navegar a la carpeta server:
+    
+    cd server
+
+2.2. Instalar dependencias:
+    
+    npm install
+
+2.3. Configurar variables de entorno:
+    
+    - Copiar el archivo .env.example a .env
+    - Editar .env con tus datos:
+    
+    DATABASE_URL="mysql://crediuser:your_password_here@localhost:3306/creditmanager"
+    JWT_ACCESS_SECRET="tu-clave-secreta-muy-segura-aqui"
+    JWT_REFRESH_SECRET="otra-clave-secreta-diferente-aqui"
+    PORT=5000
+    CLIENT_URL=http://localhost:5173
+
+2.4. Ejecutar migraciones de base de datos:
+    
+    npx prisma migrate deploy
+
+2.5. (OPCIONAL) Cargar datos de prueba:
+    
+    npx prisma db seed
+
+2.6. Iniciar servidor backend:
+    
+    npm run dev
+
+    El servidor debe iniciar en http://localhost:5000
+
+=================================
+PASO 3: CONFIGURAR FRONTEND
+=================================
+
+3.1. Abrir NUEVA terminal y navegar a carpeta client:
+    
+    cd client
+
+3.2. Instalar dependencias:
+    
+    npm install
+
+3.3. Configurar variables de entorno:
+    
+    - Copiar .env.example a .env
+    - Verificar que contenga:
+    
+    VITE_API_URL=http://localhost:5000/api
+
+3.4. Iniciar aplicación frontend:
+    
+    npm run dev
+
+    La aplicación debe abrir en http://localhost:5173
+
+=================================
+PASO 4: ACCESO INICIAL
+=================================
+
+4.1. Abrir navegador en: http://localhost:5173
+
+4.2. Usar credenciales iniciales:
+    
+    Email: admin@creditmanager.com
+    Password: admin123
+
+4.3. IMPORTANTE - CAMBIAR CONTRASEÑA:
+    
+    - Ir a Usuarios
+    - Buscar el usuario admin
+    - Cambiar contraseña inmediatamente
+
+=================================
+PASO 5: CONFIGURACIÓN INICIAL
+=================================
+
+5.1. Ir a Configuración > Empresa:
+    - Completar nombre de empresa
+    - Subir logo
+    - Agregar datos de contacto
+
+5.2. Ir a Configuración > Tasas:
+    - Configurar tasa de interés default
+    - Configurar tasa de mora
+    - Establecer límites de préstamo
+
+5.3. Ir a Configuración > Sistema:
+    - Seleccionar moneda
+    - Configurar zona horaria
+    - Ajustar formatos
+
+=================================
+SOLUCIÓN DE PROBLEMAS
+=================================
+
+Error: "Cannot connect to MySQL"
+Solución: Verificar que MySQL esté corriendo y las credenciales en .env sean correctas
+
+Error: "Port 5000 already in use"
+Solución: Cambiar PORT en server/.env a otro puerto (ej: 5001)
+
+Error: "Module not found"
+Solución: Ejecutar npm install nuevamente en la carpeta correspondiente
+
+Error: "CORS policy"
+Solución: Verificar que CLIENT_URL en server/.env coincida con la URL del frontend
+
+=================================
+DEPLOYMENT EN PRODUCCIÓN
+=================================
+
+Para producción, se recomienda:
+
+1. Usar variables de entorno reales (no localhost)
+2. Cambiar NODE_ENV=production
+3. Generar build del frontend: npm run build
+4. Usar PM2 o similar para el backend
+5. Configurar nginx como reverse proxy
+6. Habilitar HTTPS con certificado SSL
+7. Configurar backups automáticos de base de datos
+
+=================================

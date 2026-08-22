@@ -1,0 +1,29 @@
+=================================
+CREDIMANAGER - CREDITS & ATTRIBUTIONS
+=================================
+
+TECHNOLOGIES USED:
+- React 18 (https://react.dev)
+- Node.js (https://nodejs.org)
+- Express (https://expressjs.com)
+- Prisma ORM (https://prisma.io)
+- Tailwind CSS (https://tailwindcss.com)
+- Lucide Icons (https://lucide.dev)
+- Recharts (https://recharts.org)
+- date-fns (https://date-fns.org)
+
+LIBRARIES:
+- Zustand (State Management)
+- React Router (Routing)
+- Axios (HTTP Client)
+- Sonner (Toast Notifications)
+- jsPDF (PDF Generation)
+- XLSX (Excel Export)
+- Socket.io (Real-time Notifications)
+
+FONTS:
+- System fonts
+
+All third-party libraries and resources are licensed under their respective licenses.
+
+=================================

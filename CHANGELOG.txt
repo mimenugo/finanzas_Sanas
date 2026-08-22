@@ -1,0 +1,22 @@
+=================================
+CREDIMANAGER - HISTORIAL DE CAMBIOS
+=================================
+
+Version 1.0.0 (Enero 2026)
+--------------------------
+Lanzamiento inicial
+
+CARACTERÍSTICAS:
+✓ Sistema completo de gestión de préstamos
+✓ 13 módulos funcionales
+✓ 4 roles de usuario
+✓ Cálculo automático de cuotas
+✓ Sistema de mora configurable
+✓ Múltiples cajas
+✓ 7 tipos de reportes
+✓ Notificaciones en tiempo real
+✓ Sistema de configuración
+✓ Backups de base de datos
+✓ 100% responsive
+
+=================================
