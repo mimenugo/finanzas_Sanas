@@ -145,7 +145,8 @@ const upsertSetting = (key, value, category = 'google') => {
 };
 
 const buildGoogleOAuthClient = (config) => {
-  const redirectUri = config.google_sheets_redirect_uri || 'http://localhost:5000/api/settings/google-sheets/oauth/callback';
+  const defaultRedirectUri = `${process.env.API_PUBLIC_URL || 'http://localhost:5000'}/api/settings/google-sheets/oauth/callback`;
+  const redirectUri = config.google_sheets_redirect_uri || defaultRedirectUri;
   return new google.auth.OAuth2(
     config.google_sheets_client_id,
     config.google_sheets_client_secret,
@@ -400,7 +401,7 @@ export const saveGoogleSheetsConfig = async (req, res) => {
     await Promise.all([
       upsertSetting('google_sheets_client_id', clientId),
       upsertSetting('google_sheets_client_secret', clientSecret),
-      upsertSetting('google_sheets_redirect_uri', redirectUri || 'http://localhost:5000/api/settings/google-sheets/oauth/callback'),
+      upsertSetting('google_sheets_redirect_uri', redirectUri || `${process.env.API_PUBLIC_URL || 'http://localhost:5000'}/api/settings/google-sheets/oauth/callback`),
       upsertSetting('google_sheets_spreadsheet_id', spreadsheetId),
       upsertSetting('google_sheets_range', range || 'Pagos!A:N'),
     ]);

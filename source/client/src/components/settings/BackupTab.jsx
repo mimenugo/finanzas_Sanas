@@ -6,6 +6,7 @@ import { settingsService } from '@/services/settingsService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { buildApiUrl } from '@/config/apiConfig';
 
 export default function BackupTab() {
   const [backups, setBackups] = useState([]);
@@ -50,7 +51,7 @@ export default function BackupTab() {
       }
 
       // Usar fetch con token en header (el interceptor de axios maneja refresh automático)
-      const response = await fetch(`http://localhost:5000/api/settings/backup/download/${fileName}`, {
+      const response = await fetch(buildApiUrl(`settings/backup/download/${fileName}`), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

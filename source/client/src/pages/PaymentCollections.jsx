@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { paymentCollectionsService } from '@/services/paymentCollectionsService';
 import { toast } from 'sonner';
 import { Building2, CreditCard, Landmark, RefreshCw, Save, Settings, Wallet } from 'lucide-react';
+import { buildApiUrl, buildClientUrl } from '@/config/apiConfig';
 
 const settingKeys = [
   ['currency', 'Moneda'],
@@ -31,9 +32,9 @@ const providerTemplates = {
       webhookSecret: '',
     },
     webhookUrls: {
-      confirmationUrl: 'http://localhost:5000/api/payment-collections/webhooks/SPEI',
-      returnUrl: 'http://localhost:5173/mis-pagos',
-      errorUrl: 'http://localhost:5173/mis-pagos',
+      confirmationUrl: buildApiUrl('payment-collections/webhooks/SPEI'),
+      returnUrl: buildClientUrl('mis-pagos'),
+      errorUrl: buildClientUrl('mis-pagos'),
     },
     settings: {
       receivingBank: '',
@@ -47,22 +48,22 @@ const providerTemplates = {
   },
   STRIPE: {
     credentials: { publicKey: '', secretKey: '', webhookSecret: '' },
-    webhookUrls: { confirmationUrl: 'http://localhost:5000/api/payment-collections/webhooks/STRIPE' },
+    webhookUrls: { confirmationUrl: buildApiUrl('payment-collections/webhooks/STRIPE') },
     settings: { captureMode: 'automatic' },
   },
   OPENPAY: {
     credentials: { merchantId: '', publicKey: '', privateKey: '' },
-    webhookUrls: { confirmationUrl: 'http://localhost:5000/api/payment-collections/webhooks/OPENPAY' },
+    webhookUrls: { confirmationUrl: buildApiUrl('payment-collections/webhooks/OPENPAY') },
     settings: { use3ds: true },
   },
   CONEKTA: {
     credentials: { publicKey: '', privateKey: '', webhookSecret: '' },
-    webhookUrls: { confirmationUrl: 'http://localhost:5000/api/payment-collections/webhooks/CONEKTA' },
+    webhookUrls: { confirmationUrl: buildApiUrl('payment-collections/webhooks/CONEKTA') },
     settings: { oxxoCashEnabled: true },
   },
   OXXO: {
     credentials: { provider: 'CONEKTA', apiKey: '' },
-    webhookUrls: { confirmationUrl: 'http://localhost:5000/api/payment-collections/webhooks/OXXO' },
+    webhookUrls: { confirmationUrl: buildApiUrl('payment-collections/webhooks/OXXO') },
     settings: { expirationHours: 72, barcodeEnabled: true },
   },
   BANK_REFERENCE: {
@@ -453,7 +454,7 @@ export default function PaymentCollections() {
                   <label className="text-sm font-medium text-gray-700">
                     URL webhook del sistema
                     <input
-                      value="http://localhost:5000/api/payment-collections/webhooks/STRIPE"
+                      value={buildApiUrl('payment-collections/webhooks/STRIPE')}
                       readOnly
                       className="mt-1 w-full rounded-lg border bg-gray-50 px-3 py-2 text-xs"
                     />
@@ -631,7 +632,7 @@ export default function PaymentCollections() {
                     <label className="text-sm font-medium text-gray-700">
                       Webhook de confirmacion
                       <input
-                        value="http://localhost:5000/api/payment-collections/webhooks/SPEI"
+                        value={buildApiUrl('payment-collections/webhooks/SPEI')}
                         readOnly
                         className="mt-1 w-full rounded-lg border bg-gray-50 px-3 py-2 text-xs"
                       />

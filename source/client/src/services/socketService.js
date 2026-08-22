@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client';
+import { API_BASE_URL, SERVER_BASE_URL } from '@/config/apiConfig';
 
 class SocketService {
   constructor() {
@@ -13,8 +14,7 @@ class SocketService {
     }
 
     // Determinar URL base correctamente
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const socketUrl = apiUrl.replace('/api', '');
+    const socketUrl = API_BASE_URL.endsWith('/api') ? SERVER_BASE_URL : API_BASE_URL.replace(/\/api$/, '');
 
     this.socket = io(socketUrl, {
       transports: ['polling', 'websocket'], // Intentar polling primero

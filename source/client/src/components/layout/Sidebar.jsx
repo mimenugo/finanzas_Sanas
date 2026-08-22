@@ -9,6 +9,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BRAND_NAME, normalizeBrandName } from '@/constants/branding';
+import { buildServerUrl } from '@/config/apiConfig';
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['ADMIN', 'ANALISTA', 'COBRADOR', 'CONSULTA'] },
@@ -79,7 +80,7 @@ export default function Sidebar() {
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white"></div>
             ) : companyLogo ? (
               <img 
-                src={`http://localhost:5000${companyLogo}`}
+                src={buildServerUrl(companyLogo)}
                 alt={companyName}
                 className="w-full h-full object-cover"
                 onError={(e) => {

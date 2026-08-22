@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import CustomerModal from '@/components/customers/CustomerModal';
 import RegistrationLinkModal from '@/components/customers/RegistrationLinkModal';
 import { useAuthStore } from '@/store/authStore';
+import { buildServerUrl } from '@/config/apiConfig';
 
 export default function Customers() {
   const { user } = useAuthStore();
@@ -182,7 +183,7 @@ export default function Customers() {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
                               {customer.photo ? (
-                                <img src={`http://localhost:5000${customer.photo}`} alt="" className="h-full w-full object-cover" />
+                                <img src={buildServerUrl(customer.photo)} alt="" className="h-full w-full object-cover" />
                               ) : (
                                 <span className="font-semibold text-primary">{customer.firstName.charAt(0)}</span>
                               )}

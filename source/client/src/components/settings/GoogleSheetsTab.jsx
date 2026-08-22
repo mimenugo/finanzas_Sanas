@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { settingsService } from '@/services/settingsService';
 import { toast } from 'sonner';
 import { Download, ExternalLink, FileSpreadsheet, PlugZap, Save, UploadCloud } from 'lucide-react';
+import { buildApiUrl } from '@/config/apiConfig';
 
-const defaultRedirectUri = 'http://localhost:5000/api/settings/google-sheets/oauth/callback';
+const defaultRedirectUri = buildApiUrl('settings/google-sheets/oauth/callback');
 const expectedPaymentHeaders = [
   'folio_pago',
   'fecha_pago',

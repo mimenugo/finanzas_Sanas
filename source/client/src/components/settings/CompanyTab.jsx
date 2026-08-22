@@ -7,6 +7,7 @@ import { Upload, Save, Building2, Globe, Facebook, Instagram, Linkedin } from 'l
 import { settingsService } from '@/services/settingsService';
 import { toast } from 'sonner';
 import { BRAND_NAME, PORTAL_NAME, normalizeBrandName } from '@/constants/branding';
+import { buildServerUrl } from '@/config/apiConfig';
 
 export default function CompanyTab({ settings, onSave }) {
   const [formData, setFormData] = useState({
@@ -85,7 +86,7 @@ export default function CompanyTab({ settings, onSave }) {
               {formData.company_logo ? (
                 <div className="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
                   <img
-                    src={`http://localhost:5000${formData.company_logo}`}
+                    src={buildServerUrl(formData.company_logo)}
                     alt="Logo"
                     className="max-w-full max-h-full object-contain"
                   />

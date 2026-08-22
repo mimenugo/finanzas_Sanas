@@ -6,6 +6,7 @@ import { LogIn, Mail, Lock, AlertCircle, DollarSign, Eye, EyeOff, Building2 } fr
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { BRAND_NAME, PUBLIC_DESCRIPTION, normalizeBrandName } from '@/constants/branding';
+import { buildServerUrl } from '@/config/apiConfig';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -115,7 +116,7 @@ export default function Login() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl mb-4 shadow-lg shadow-primary-500/50 overflow-hidden">
               {companyLogo ? (
                 <img 
-                  src={`http://localhost:5000${companyLogo}`}
+                  src={buildServerUrl(companyLogo)}
                   alt={companyName}
                   className="w-full h-full object-cover"
                   onError={(e) => {

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { customerService } from '@/services/customerService';
 import { toast } from 'sonner';
 import { FileText, Save, Upload, X } from 'lucide-react';
+import { buildServerUrl } from '@/config/apiConfig';
 
 const MAX_DOCUMENT_FILE_SIZE = 7 * 1024 * 1024;
 const DOCUMENT_TYPES = ['INE', 'CE', 'PASAPORTE', 'RFC'];
@@ -53,7 +54,7 @@ const customerSchema = z.object({
   path: ['addressProofIssuedAt'],
 });
 
-const fileUrl = (url) => (url?.startsWith('http') ? url : `http://localhost:5000${url}`);
+const fileUrl = buildServerUrl;
 
 export default function CustomerModal({ open, onClose, customer, onSuccess }) {
   const isEdit = !!customer;
