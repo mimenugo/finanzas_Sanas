@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { customerService } from '@/services/customerService';
+import { MEXICAN_FINANCIAL_INSTITUTIONS } from '@/constants/mexicanFinancialInstitutions';
 
 const statusStyles = {
   PENDING: 'border-amber-200 bg-amber-50 text-amber-800',
@@ -100,7 +101,12 @@ export default function DisbursementAccountsCard({ customerId, canManage, isAdmi
             <div className="grid gap-3 md:grid-cols-2">
               <label className="text-sm font-medium">
                 Banco
-                <input required value={form.bank} onChange={(event) => setForm({ ...form, bank: event.target.value })} className="mt-1 w-full rounded-md border bg-background px-3 py-2" placeholder="Ej. BBVA" />
+                <input required list="mexican-financial-institutions" value={form.bank} onChange={(event) => setForm({ ...form, bank: event.target.value })} className="mt-1 w-full rounded-md border bg-background px-3 py-2" placeholder="Busca o selecciona una institucion" />
+                <datalist id="mexican-financial-institutions">
+                  {MEXICAN_FINANCIAL_INSTITUTIONS.map((institution) => (
+                    <option key={institution.code} value={institution.name} label={`Clave SPEI ${institution.code}`} />
+                  ))}
+                </datalist>
               </label>
               <label className="text-sm font-medium">
                 Titular de la cuenta
