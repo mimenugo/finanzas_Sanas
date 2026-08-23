@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE `settings` (
+CREATE TABLE IF NOT EXISTS `settings` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `key` VARCHAR(191) NOT NULL,
     `value` TEXT NOT NULL,
