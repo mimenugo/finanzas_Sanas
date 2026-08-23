@@ -47,6 +47,26 @@ export const customerService = {
     return data;
   },
 
+  getDisbursementAccounts: async (customerId) => {
+    const { data } = await api.get(`/customers/${customerId}/disbursement-accounts`);
+    return data;
+  },
+
+  createDisbursementAccount: async (customerId, payload) => {
+    const { data } = await api.post(`/customers/${customerId}/disbursement-accounts`, payload);
+    return data;
+  },
+
+  verifyDisbursementAccount: async (customerId, accountId, payload) => {
+    const { data } = await api.patch(`/customers/${customerId}/disbursement-accounts/${accountId}/verification`, payload);
+    return data;
+  },
+
+  setPrimaryDisbursementAccount: async (customerId, accountId) => {
+    const { data } = await api.patch(`/customers/${customerId}/disbursement-accounts/${accountId}/primary`);
+    return data;
+  },
+
   createRegistrationLink: async (payload) => {
     const { data } = await api.post('/customers/registration-links', payload);
     return data;

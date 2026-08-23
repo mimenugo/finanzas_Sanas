@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { paymentCollectionsService } from '@/services/paymentCollectionsService';
 import { toast } from 'sonner';
-import { CalendarDays, CheckCircle2, Clock3, CreditCard, ReceiptText, Search, Wallet, XCircle } from 'lucide-react';
+import { Building2, CalendarDays, CheckCircle2, Clock3, CreditCard, ReceiptText, Search, ShieldCheck, Wallet, XCircle } from 'lucide-react';
 import { PORTAL_NAME, PUBLIC_DESCRIPTION } from '@/constants/branding';
 
 const formatCurrency = (value) => `$${Number(value || 0).toFixed(2)}`;
@@ -300,6 +300,29 @@ export default function ClientPayments() {
               <CardContent className="p-4">
                 <p className="text-lg font-semibold">{data.customer.firstName} {data.customer.lastName}</p>
                 <p className="text-sm text-gray-500">Telefono: {data.customer.phone}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Datos para recibir recursos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {data.disbursementDestination ? (
+                  <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="font-semibold text-emerald-950">{data.disbursementDestination.bank}</p>
+                      <p className="text-sm text-emerald-900">Titular: {data.disbursementDestination.accountHolder}</p>
+                      <p className="font-mono text-sm text-emerald-900">CLABE {data.disbursementDestination.destinationMasked}</p>
+                      {data.disbursement?.reference && <p className="mt-1 text-xs text-emerald-800">Referencia de dispersión: {data.disbursement.reference}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-800"><ShieldCheck className="h-5 w-5" /> Cuenta verificada</div>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed p-4 text-sm text-gray-600">
+                    Aun no existe una cuenta de recepcion asignada a esta cuenta. Contacta a la administracion para actualizarla.
+                  </div>
+                )}
               </CardContent>
             </Card>
 

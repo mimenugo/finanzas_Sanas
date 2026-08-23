@@ -89,6 +89,8 @@ model Customer {
   creditReferences Customer[] @relation("CustomerCreditReference")
   paymentReferences PaymentReference[]
   paymentTransactions PaymentTransaction[]
+  disbursementAccounts CustomerDisbursementAccount[]
+  disbursements      Disbursement[]
   
   @@index([documentNumber])           
   @@index([email])                    
@@ -350,6 +352,7 @@ model Loan {
   frequency       Frequency
   disbursementDate DateTime
   disbursementMethod String
+  disbursementAccountId Int?
   balance         Decimal  @db.Decimal(10, 2)
   status          LoanStatus @default(ACTIVE)
   createdAt       DateTime @default(now())
@@ -363,12 +366,71 @@ model Loan {
   collectionLogs  CollectionLog[]
   paymentReferences PaymentReference[]
   paymentTransactions PaymentTransaction[]
+  disbursementAccount CustomerDisbursementAccount? @relation(fields: [disbursementAccountId], references: [id])
+  disbursement        Disbursement?
   
   @@index([customerId])               
   @@index([collectorId])              
   @@index([status])                   
   @@index([disbursementDate])         
+  @@index([disbursementAccountId])
   @@index([createdAt])            
+}
+
+model CustomerDisbursementAccount {
+  id                Int      @id @default(autoincrement())
+  customerId        Int
+  bank              String
+  accountHolder     String
+  destinationType   String   @default("CLABE")
+  clabeEncrypted    String   @db.Text
+  destinationLast4  String
+  status            String   @default("PENDING")
+  isPrimary         Boolean  @default(false)
+  consentAt         DateTime
+  verifiedAt        DateTime?
+  verifiedById      Int?
+  verificationNotes String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  loans        Loan[]
+  disbursements Disbursement[]
+
+  @@index([customerId, status])
+  @@index([customerId, isPrimary])
+  @@map("customer_disbursement_accounts")
+}
+
+model Disbursement {
+  id                    Int      @id @default(autoincrement())
+  loanId                Int      @unique
+  customerId            Int
+  disbursementAccountId Int?
+  cashId                Int?
+  amount                Decimal  @db.Decimal(10, 2)
+  method                String
+  status                String   @default("PENDING")
+  reference             String   @unique
+  providerTransactionId String?
+  initiatedById         Int
+  sentAt                DateTime?
+  confirmedAt           DateTime?
+  returnedAt            DateTime?
+  notes                 String?  @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  loan                Loan                        @relation(fields: [loanId], references: [id])
+  customer            Customer                    @relation(fields: [customerId], references: [id])
+  disbursementAccount CustomerDisbursementAccount? @relation(fields: [disbursementAccountId], references: [id])
+
+  @@index([customerId])
+  @@index([disbursementAccountId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("loan_disbursements")
 }
 
 model Installment {

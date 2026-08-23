@@ -335,6 +335,21 @@ export const getLoan = async (req, res) => {
             approval: true
           }
         },
+        disbursementAccount: {
+          select: {
+            bank: true,
+            accountHolder: true,
+            destinationLast4: true,
+            status: true,
+          },
+        },
+        disbursement: {
+          select: {
+            status: true,
+            reference: true,
+            confirmedAt: true,
+          },
+        },
         installments: {
           orderBy: { installmentNumber: 'asc' }
         },
@@ -430,7 +445,7 @@ export const getLoan = async (req, res) => {
 
 export const createLoan = async (req, res) => {
   try {
-    const { applicationId, collectorId, disbursementDate, disbursementMethod, cashId } = req.body;
+    const { applicationId, collectorId, disbursementDate, disbursementMethod, cashId, disbursementAccountId } = req.body;
 
     if (req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can create loans' });
@@ -463,6 +478,28 @@ export const createLoan = async (req, res) => {
 
     if (application.loan) {
       return res.status(400).json({ error: 'Loan already exists for this application' });
+    }
+
+    const isTransfer = disbursementMethod === 'TRANSFER';
+    let disbursementAccount = null;
+
+    if (isTransfer) {
+      if (!disbursementAccountId) {
+        return res.status(400).json({ error: 'Selecciona una cuenta de recepcion verificada para la transferencia' });
+      }
+
+      disbursementAccount = await prisma.customerDisbursementAccount.findFirst({
+        where: {
+          id: parseInt(disbursementAccountId),
+          customerId: application.customerId,
+          status: 'VERIFIED',
+        },
+        select: { id: true, bank: true, destinationLast4: true },
+      });
+
+      if (!disbursementAccount) {
+        return res.status(400).json({ error: 'La cuenta de recepcion debe pertenecer al cliente y estar verificada' });
+      }
     }
 
     const collector = await prisma.user.findUnique({
@@ -532,6 +569,7 @@ export const createLoan = async (req, res) => {
           frequency: approval.frequency,
           disbursementDate: new Date(disbursementDate),
           disbursementMethod,
+          disbursementAccountId: disbursementAccount?.id || null,
           balance: parseFloat(approval.approvedAmount),
           status: 'ACTIVE',
           installments: {
@@ -566,6 +604,24 @@ export const createLoan = async (req, res) => {
         }
       });
 
+      await tx.disbursement.create({
+        data: {
+          loanId: newLoan.id,
+          customerId: application.customerId,
+          disbursementAccountId: disbursementAccount?.id || null,
+          cashId: parseInt(cashId),
+          amount: loanAmount,
+          method: disbursementMethod,
+          status: isTransfer ? 'PENDING' : 'CONFIRMED',
+          reference: `DISB-${newLoan.id}-${Date.now()}`,
+          initiatedById: req.user.id,
+          confirmedAt: isTransfer ? null : new Date(),
+          notes: isTransfer
+            ? `Transferencia pendiente a ${disbursementAccount.bank} terminacion ${disbursementAccount.destinationLast4}`
+            : 'Entrega registrada como efectivo o cheque',
+        },
+      });
+
       return newLoan;
     });
 
@@ -574,7 +630,7 @@ export const createLoan = async (req, res) => {
         userId: req.user.id,
         module: 'LOANS',
         action: 'CREATE',
-        details: `Created loan #${loan.id} for ${application.customer.firstName} ${application.customer.lastName} - Amount: ${approval.approvedAmount} - Method: ${calculationMethod} - Caja: ${cash.name}`,
+        details: `Created loan #${loan.id} for ${application.customer.firstName} ${application.customer.lastName} - Amount: ${approval.approvedAmount} - Method: ${disbursementMethod} - Caja: ${cash.name}${disbursementAccount ? ` - Destination: ${disbursementAccount.bank} ****${disbursementAccount.destinationLast4}` : ''}`,
         ipAddress: req.ip
       }
     });

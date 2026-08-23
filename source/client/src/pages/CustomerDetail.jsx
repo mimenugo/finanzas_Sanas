@@ -10,6 +10,7 @@ import {
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
 import CustomerModal from '@/components/customers/CustomerModal';
+import DisbursementAccountsCard from '@/components/customers/DisbursementAccountsCard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CustomerDetail() {
@@ -261,6 +262,12 @@ export default function CustomerDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <DisbursementAccountsCard
+        customerId={customer.id}
+        canManage={canEdit}
+        isAdmin={user?.role === 'ADMIN'}
+      />
 
       {/* Gráfico de Comportamiento */}
       {chartData.length > 0 && (

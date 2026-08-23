@@ -830,7 +830,30 @@ export const getClientPaymentPortalByPhoneLoan = async (req, res) => {
     const loan = await prisma.loan.findUnique({
       where: { id: parseInt(loanId) },
       include: {
-        customer: true,
+        customer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            email: true,
+          },
+        },
+        disbursementAccount: {
+          select: {
+            bank: true,
+            accountHolder: true,
+            destinationLast4: true,
+            status: true,
+          },
+        },
+        disbursement: {
+          select: {
+            status: true,
+            reference: true,
+            confirmedAt: true,
+          },
+        },
         installments: { orderBy: { installmentNumber: 'asc' } },
         payments: { orderBy: { paymentDate: 'desc' } },
       },
@@ -846,7 +869,10 @@ export const getClientPaymentPortalByPhoneLoan = async (req, res) => {
     });
 
     const customer = {
-      ...loan.customer,
+      id: loan.customer.id,
+      firstName: loan.customer.firstName,
+      lastName: loan.customer.lastName,
+      phone: loan.customer.phone,
       loans: [{
         id: loan.id,
         applicationId: loan.applicationId,
@@ -867,7 +893,22 @@ export const getClientPaymentPortalByPhoneLoan = async (req, res) => {
       }],
     };
 
-    res.json({ customer, methods, lookup: { phone: normalizePhone(phone), loanId: loan.id } });
+    const disbursementDestination = loan.disbursementAccount
+      ? {
+          bank: loan.disbursementAccount.bank,
+          accountHolder: loan.disbursementAccount.accountHolder,
+          destinationMasked: `**************${loan.disbursementAccount.destinationLast4}`,
+          verificationStatus: loan.disbursementAccount.status,
+        }
+      : null;
+
+    res.json({
+      customer,
+      methods,
+      disbursementDestination,
+      disbursement: loan.disbursement,
+      lookup: { phone: normalizePhone(phone), loanId: loan.id },
+    });
   } catch (error) {
     console.error('Client payment portal by phone error:', error);
     res.status(500).json({ error: 'No se pudo cargar Mis Pagos' });

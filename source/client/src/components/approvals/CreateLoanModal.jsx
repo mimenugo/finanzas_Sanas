@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { loanService } from '@/services/loanService';
 import { cashService } from '@/services/cashService'; // ← AGREGAR
+import { customerService } from '@/services/customerService';
 import api from '@/services/api';
 import { toast } from 'sonner';
 import { DollarSign, X, Wallet } from 'lucide-react'; // ← AGREGAR Wallet
@@ -26,6 +27,7 @@ const loanSchema = z.object({
 export default function CreateLoanModal({ open, onClose, application, onSuccess }) {
   const [collectors, setCollectors] = useState([]);
   const [cashes, setCashes] = useState([]); // ← AGREGAR
+  const [disbursementAccounts, setDisbursementAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const {
@@ -39,20 +41,24 @@ export default function CreateLoanModal({ open, onClose, application, onSuccess 
     defaultValues: {
       collectorId: '',
       cashId: '', // ← AGREGAR
+      disbursementAccountId: '',
       disbursementDate: new Date().toISOString().split('T')[0],
       disbursementMethod: 'TRANSFER'
     }
   });
 
   const selectedCashId = watch('cashId'); // ← AGREGAR
+  const selectedDisbursementMethod = watch('disbursementMethod');
 
   useEffect(() => {
     if (open) {
       fetchCollectors();
       fetchCashes(); // ← AGREGAR
+      fetchDisbursementAccounts();
       reset({
         collectorId: '',
         cashId: '', // ← AGREGAR
+        disbursementAccountId: '',
         disbursementDate: new Date().toISOString().split('T')[0],
         disbursementMethod: 'TRANSFER'
       });
@@ -85,12 +91,28 @@ export default function CreateLoanModal({ open, onClose, application, onSuccess 
     }
   };
 
+  const fetchDisbursementAccounts = async () => {
+    if (!application?.customer?.id) return;
+    try {
+      const result = await customerService.getDisbursementAccounts(application.customer.id);
+      setDisbursementAccounts((result.accounts || []).filter((account) => account.status === 'VERIFIED'));
+    } catch (error) {
+      console.error('Error fetching disbursement accounts:', error);
+      setDisbursementAccounts([]);
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
+      if (data.disbursementMethod === 'TRANSFER' && !data.disbursementAccountId) {
+        toast.error('Selecciona una cuenta de recepcion verificada para la transferencia');
+        return;
+      }
       await loanService.create({
         applicationId: application.id,
         collectorId: parseInt(data.collectorId),
         cashId: parseInt(data.cashId), // ← AGREGAR
+        disbursementAccountId: data.disbursementAccountId ? parseInt(data.disbursementAccountId) : undefined,
         disbursementDate: data.disbursementDate,
         disbursementMethod: data.disbursementMethod
       });
@@ -241,6 +263,28 @@ export default function CreateLoanModal({ open, onClose, application, onSuccess 
                 <option value="CHECK">Cheque</option>
               </select>
             </div>
+
+            {selectedDisbursementMethod === 'TRANSFER' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cuenta de recepcion verificada <span className="text-red-500">*</span>
+                </label>
+                <select
+                  {...register('disbursementAccountId')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Selecciona la cuenta del cliente</option>
+                  {disbursementAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.bank} - {account.accountHolder} - CLABE {account.destinationMasked}
+                    </option>
+                  ))}
+                </select>
+                {disbursementAccounts.length === 0 && (
+                  <p className="mt-1 text-sm text-amber-700">El cliente no tiene una cuenta verificada. Regístrala desde su perfil antes de crear la transferencia.</p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

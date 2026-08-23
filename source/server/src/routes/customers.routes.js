@@ -13,6 +13,12 @@ import {
   getRegistrationRequests,
   updateRegistrationDecision
 } from '../controllers/registration.controller.js';
+import {
+  createDisbursementAccount,
+  getDisbursementAccounts,
+  setPrimaryDisbursementAccount,
+  verifyDisbursementAccount
+} from '../controllers/disbursementAccounts.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 
 const router = express.Router();
@@ -29,6 +35,11 @@ router.patch('/:customerId/registration-decision', authorize('ADMIN', 'ANALISTA'
 
 // Get customers eligible as credit reference / guarantor
 router.get('/credit-references', getCreditReferenceCustomers);
+
+router.get('/:customerId/disbursement-accounts', authorize('ADMIN', 'ANALISTA'), getDisbursementAccounts);
+router.post('/:customerId/disbursement-accounts', authorize('ADMIN', 'ANALISTA'), createDisbursementAccount);
+router.patch('/:customerId/disbursement-accounts/:accountId/verification', authorize('ADMIN'), verifyDisbursementAccount);
+router.patch('/:customerId/disbursement-accounts/:accountId/primary', authorize('ADMIN'), setPrimaryDisbursementAccount);
 
 // Get single customer (all roles)
 router.get('/:id', getCustomer);

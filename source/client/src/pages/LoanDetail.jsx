@@ -284,6 +284,24 @@ export default function LoanDetail() {
               <span className="text-gray-600">Método de entrega:</span>
               <span className="font-semibold">{loan.disbursementMethod}</span>
             </div>
+            {loan.disbursementAccount && (
+              <>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">Destino:</span>
+                  <span className="text-right font-semibold">{loan.disbursementAccount.bank} · ****{loan.disbursementAccount.destinationLast4}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">Estatus de dispersión:</span>
+                  <span className="text-right font-semibold">{loan.disbursement?.status === 'CONFIRMED' ? 'Confirmada' : 'Pendiente'}</span>
+                </div>
+                {loan.disbursement?.reference && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-600">Referencia:</span>
+                    <span className="text-right font-mono text-xs">{loan.disbursement.reference}</span>
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
