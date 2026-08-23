@@ -113,9 +113,10 @@ export default function DisbursementAccountsCard({ customerId, canManage, isAdmi
                 <input required value={form.accountHolder} onChange={(event) => setForm({ ...form, accountHolder: event.target.value })} className="mt-1 w-full rounded-md border bg-background px-3 py-2" placeholder="Nombre como aparece en el banco" />
               </label>
             </div>
-            <label className="block text-sm font-medium">
+            <label className="block max-w-md text-sm font-medium">
               CLABE de 18 digitos
-              <input required inputMode="numeric" maxLength={18} value={form.clabe} onChange={(event) => setForm({ ...form, clabe: event.target.value.replace(/\D/g, '').slice(0, 18) })} className="mt-1 w-full rounded-md border bg-background px-3 py-2 tracking-wide" placeholder="000000000000000000" />
+              <input required inputMode="numeric" maxLength={18} value={form.clabe} onChange={(event) => setForm({ ...form, clabe: event.target.value.replace(/\D/g, '').slice(0, 18) })} className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono tracking-wide" placeholder="000000000000000000" />
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">18 digitos; se cifrara al guardarla.</span>
             </label>
             <label className="flex items-start gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} className="mt-0.5" required />
