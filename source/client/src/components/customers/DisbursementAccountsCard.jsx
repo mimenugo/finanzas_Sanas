@@ -18,12 +18,27 @@ const statusLabels = {
   REJECTED: 'Rechazada',
 };
 
+const hasValidClabeCheckDigit = (value) => {
+  const clabe = String(value || '').replace(/\D/g, '');
+  if (clabe.length !== 18) return false;
+
+  const factors = [3, 7, 1];
+  const sum = clabe.slice(0, 17).split('').reduce(
+    (total, digit, index) => total + ((Number(digit) * factors[index % 3]) % 10),
+    0,
+  );
+
+  return (10 - (sum % 10)) % 10 === Number(clabe[17]);
+};
+
 export default function DisbursementAccountsCard({ customerId, canManage, isAdmin }) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ bank: '', accountHolder: '', clabe: '', consentAccepted: false });
+  const clabeIsComplete = form.clabe.length === 18;
+  const clabeIsValid = hasValidClabeCheckDigit(form.clabe);
 
   const loadAccounts = async () => {
     try {
@@ -43,6 +58,11 @@ export default function DisbursementAccountsCard({ customerId, canManage, isAdmi
 
   const createAccount = async (event) => {
     event.preventDefault();
+    if (!clabeIsValid) {
+      toast.error('La CLABE debe tener 18 digitos y un digito verificador valido.');
+      return;
+    }
+
     try {
       setSaving(true);
       await customerService.createDisbursementAccount(customerId, form);
@@ -115,8 +135,12 @@ export default function DisbursementAccountsCard({ customerId, canManage, isAdmi
             </div>
             <label className="block max-w-md text-sm font-medium">
               CLABE de 18 digitos
-              <input required inputMode="numeric" maxLength={18} value={form.clabe} onChange={(event) => setForm({ ...form, clabe: event.target.value.replace(/\D/g, '').slice(0, 18) })} className="mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono tracking-wide" placeholder="000000000000000000" />
-              <span className="mt-1 block text-xs font-normal text-muted-foreground">18 digitos; se cifrara al guardarla.</span>
+              <input required inputMode="numeric" maxLength={18} value={form.clabe} onChange={(event) => setForm({ ...form, clabe: event.target.value.replace(/\D/g, '').slice(0, 18) })} className={`mt-1 w-full rounded-md border bg-background px-3 py-2 font-mono tracking-wide ${clabeIsComplete && !clabeIsValid ? 'border-red-500 focus-visible:ring-red-500' : ''}`} placeholder="000000000000000000" />
+              <span className={`mt-1 block text-xs font-normal ${clabeIsComplete && !clabeIsValid ? 'text-red-600' : 'text-muted-foreground'}`}>
+                {clabeIsComplete && !clabeIsValid
+                  ? 'La CLABE no pasa la validacion de su digito verificador.'
+                  : `18 digitos; se cifrara al guardarla.${form.clabe && !clabeIsComplete ? ` Faltan ${18 - form.clabe.length} digitos.` : ''}`}
+              </span>
             </label>
             <label className="flex items-start gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} className="mt-0.5" required />
@@ -124,7 +148,7 @@ export default function DisbursementAccountsCard({ customerId, canManage, isAdmi
             </label>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-              <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar para validacion'}</Button>
+              <Button type="submit" disabled={saving || (clabeIsComplete && !clabeIsValid)}>{saving ? 'Guardando...' : 'Guardar para validacion'}</Button>
             </div>
           </form>
         )}
